@@ -170,7 +170,7 @@ class Explosion:
         self.img = self.imgs[0]
         self.rct = self.img.get_rect()
         self.rct.center = bomb.rct.center
-        self.life = 10  # 爆発エフェクトの寿命（フレーム数）を50フレームに延長
+        self.life = 10
 
     def update(self, screen: pg.Surface):
         """
