@@ -169,7 +169,7 @@ def main():
     #     bomb = Bomb((255, 0, 0), 10)
     #     bombs.append(bomb)
     bombs = [Bomb((255, 0, 0), 10) for _ in range(NUM_OF_BOMBS)]  #内包表記
-    beam = None  # ゲーム初期化時にはビームは存在しない
+    beams = []  # ゲーム初期化時にはビームは存在しない
     score = Score()  # Scoreインスタンスの生成
     clock = pg.time.Clock()
     tmr = 0
@@ -179,7 +179,7 @@ def main():
                 return
             if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
                 # スペースキー押下でBeamクラスのインスタンス生成
-                beam = Beam(bird)            
+                beams.append(Beam(bird))            
         screen.blit(bg_img, [0, 0])
         
         for b, bomb in enumerate(bombs):
@@ -192,21 +192,34 @@ def main():
                 pg.display.update()
                 time.sleep(1)
                 return
-        for b, bomb in enumerate(bombs):
-            if beam is not None:
+        for be, beam in enumerate(beams):
+            if beam is None:
+                continue
+            for b, bomb in enumerate(bombs):
+                if bomb is None:
+                    continue
+                # ビームが爆弾に当たったら，爆弾とビームを消す
                 if beam.rct.colliderect(bomb.rct):
-                    # ビームが爆弾に当たったら，爆弾とビームを消す
-                    beam = None
+                    beams[be] = None
                     bombs[b] = None
-                    score.score += 1  # スコアアップ（1点）
+                    score.score += 1
                     bird.change_img(6, screen)
                     pg.display.update()
         bombs = [bomb for bomb in bombs if bomb is not None]  # Noneを取り除く
 
         key_lst = pg.key.get_pressed()
         bird.update(key_lst, screen)
-        if beam is not None:  # ビームが存在していたら
-            beam.update(screen)   
+        for beam in beams:
+            if beam is not None:  # ビームが存在していたら
+                beam.update(screen)
+        # 画面外に出たビームはリストから削除（for文で処理）
+        temp_beams = []
+        for b in beams:
+            if b is None:
+                continue
+            if check_bound(b.rct) == (True, True):
+                temp_beams.append(b)
+        beams = temp_beams
         for bomb in bombs:  # 爆弾が存在していたら
             bomb.update(screen)
         score.update(screen)  # スコア表示の更新
