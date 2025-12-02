@@ -107,7 +107,10 @@ class  Beam:
         """
         if check_bound(self.rct) == (True, True):
             self.rct.move_ip(self.vx, self.vy)
-            screen.blit(self.img, self.rct)    
+            screen.blit(self.img, self.rct) 
+            return True
+        else:
+            return False   
 
 
 class Bomb:
@@ -170,7 +173,7 @@ class Explosion:
         self.img = self.imgs[0]
         self.rct = self.img.get_rect()
         self.rct.center = bomb.rct.center
-        self.life = 10
+        self.life = 10  # 爆発エフェクトの寿命（フレーム数）を50フレームに延長
 
     def update(self, screen: pg.Surface):
         """
@@ -178,7 +181,7 @@ class Explosion:
         引数 screen：画面Surface
         """
         self.life -= 1
-        if self.life <= 0:
+        if self.life > 0:
             if self.life % 2 == 0:
                 screen.blit(self.imgs[0], self.rct)
             else:
@@ -235,6 +238,7 @@ def main():
                     score.score += 1
                     bird.change_img(6, screen)
                     pg.display.update()
+                    break
         bombs = [bomb for bomb in bombs if bomb is not None]  # Noneを取り除く
 
         
