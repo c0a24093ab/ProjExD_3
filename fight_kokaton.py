@@ -107,7 +107,10 @@ class  Beam:
         """
         if check_bound(self.rct) == (True, True):
             self.rct.move_ip(self.vx, self.vy)
-            screen.blit(self.img, self.rct)    
+            screen.blit(self.img, self.rct)
+            return True
+        else:
+            return False    
 
 
 class Bomb:
