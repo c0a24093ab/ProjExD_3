@@ -161,26 +161,28 @@ class Explosion:
     """
     爆発エフェクトに関するクラス
     """
-    def __init__(self, center: tuple[int, int]):
+    def __init__(self, bomb):
         """
         引数に基づき爆発エフェクト画像Surfaceを生成する
-        引数 center：爆発エフェクトの中心座標タプル
+        引数：bombインスタンス
         """
-        self.imgs = [pg.transform.rotozoom(pg.image.load(f"fig/explosion.gif"), 0, 1.0) for i in range(9)]
-        self.idx = 0
-        self.img = self.imgs[self.idx]
+        self.imgs = [pg.image.load(f"fig/explosion.gif"), pg.transform.flip(pg.image.load(f"fig/explosion.gif"), True, True)]
+        self.img = self.imgs[0]
         self.rct = self.img.get_rect()
-        self.rct.center = center
+        self.rct.center = bomb.rct.center
+        self.life = 10  # 爆発エフェクトの寿命（フレーム数）を50フレームに延長
 
     def update(self, screen: pg.Surface):
         """
         爆発エフェクト画像を順次切り替え，画面に転送する
         引数 screen：画面Surface
         """
-        if self.idx < len(self.imgs):
-            self.img = self.imgs[self.idx]
-            screen.blit(self.img, self.rct)
-            self.idx += 1
+        self.life -= 1
+        if self.life <= 0:
+            if self.life % 2 == 0:
+                screen.blit(self.imgs[0], self.rct)
+            else:
+                screen.blit(self.imgs[1], self.rct)
 
 
 def main():
@@ -229,12 +231,13 @@ def main():
                 if beam.rct.colliderect(bomb.rct):
                     beams[be] = None
                     bombs[b] = None
-                    exps.append(Explosion(bomb.rct.center))
+                    exps.append(Explosion(bomb))
                     score.score += 1
                     bird.change_img(6, screen)
                     pg.display.update()
         bombs = [bomb for bomb in bombs if bomb is not None]  # Noneを取り除く
 
+        
         key_lst = pg.key.get_pressed()
         bird.update(key_lst, screen)
         for beam in beams:
@@ -248,8 +251,13 @@ def main():
             if check_bound(b.rct) == (True, True):
                 temp_beams.append(b)
         beams = temp_beams
+        
         for exp in exps:
-            exp.update(screen)  
+            if not exp.life > 0:
+                exps.remove(exp)
+        if exps:
+            for exp in exps:     
+                exp.update(screen)  
         for bomb in bombs:  # 爆弾が存在していたら
             bomb.update(screen)
         score.update(screen)  # スコア表示の更新
@@ -262,4 +270,4 @@ if __name__ == "__main__":
     pg.init()
     main()
     pg.quit()
-    sys.exit()
+    sys.exit() 
